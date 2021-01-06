@@ -11,35 +11,31 @@ from datetime import datetime, date, time, timedelta
 import calendar
 
 mylist = []
+list_sheetbyName = []
 
 def run():
     enviarEmail = False
 
     name_file = "Control_Documentos.xlsx"
     file = openpyxl.load_workbook(name_file)
-    sheet1 = file.get_sheet_by_name('Erick Pasache')
-    sheet2 = file.get_sheet_by_name('Johnnel Panduro')
-    sheet3 = file.get_sheet_by_name('A1I827')
-    sheet4 = file.get_sheet_by_name('C9L911')
+    list_sheetbyName = file.sheetnames
 
-    lookCell(sheet1, 'C21', 'C22')
-    lookCell(sheet2, 'C21', 'C22')
-    lookCell(sheet3, 'C21', 'C22')
-    lookCell(sheet4, 'C21', 'C22')
+    for name in list_sheetbyName:
+        sheet = file.get_sheet_by_name(name)
+        lookCell(sheet, 'L3','L4')
 
     print(mylist)
+    
+    file.close()
     #mira en la lista algun valor mayor que cero
     for i in mylist:
         if i > 0:
             enviarEmail = True
 
-    print(enviarEmail)
+    #print(enviarEmail)
 
     if (enviarEmail):
         procesaDestinatarios()
-
-    file.close()
-
 
 def lookCell(sheet, cellInit, cellEnd):
     i = 0
@@ -56,20 +52,28 @@ def procesaDestinatarios():
         "user2": "epasache_28@hotmail.com"
     }
 
+
     for i in destinatarios:
         sendEmail(destinatarios[i])
 
 def sendEmail(destinatarios):
+    cadena = ''
+    #construccion de mensaje
+    for i, name in enumerate(list_sheetbyName):
+        cadena = cadena + name + ' tiene ' + str(mylist[i*2]) + ' documentos por vencer y ' + str(mylist[i*2 + 1]) + ' documentos vencidos\n'
+    
+    #print (cadena)
     #crea la instancia del objeto de mensaje
     msg = MIMEMultipart()
-    message = "Hola buen dia \n\nSe envia lista actualizada de documentos de personal operativo. Hay\n\n" + str(mylist[0]) + " documentos de Erick por vencer,\n" + str(mylist[1]) + " documentos de Erick vencidos,\n" + str(mylist[2]) + " documentos de Johnnel por vencer,\n" + str(mylist[3]) + " documentos de Johnnel vencidos.\n\n" + str(mylist[4])+ " documentos de unidad A1I827 por vencer\n" + str(mylist[5])+ " documentos de unidad A1I827 vencidos\n" + str(mylist[6])+ " documentos de unidad C9L911 por vencer\n" + str(mylist[7]) + " documentos de unidad C9L911 vencidos\n\n" + "Soy un Bot."
+       
+    message = "Hola buen dia \n\nSe envia lista actualizada de documentos de personal operativo:\n\n" + cadena
     ruta_adjunto = "lista_Documentos_PersonalOperativo.xlsx"
     nombre_adjunto = "lista_Documentos_PersonalOperativo.xlsx"
     #configura los parametros del mensaje
     password = "99e12438cf"
     msg['From'] ="soyunbot2817@gmail.com"
     msg['To'] = destinatarios
-    msg['Subject'] = "Lista de Documentos de Personal Operativo"
+    msg['Subject'] = "Lista de Documentos de Personal Operativo y Vehiculos"
     #agrega el cuerpo del mensaje
     msg.attach(MIMEText(message, 'plain'))
     # Abrimos el archivo que vamos a adjuntar
